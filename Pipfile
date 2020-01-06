@@ -8,6 +8,9 @@ verify_ssl = true
 [packages]
 requests = "*"
 bs4 = "*"
+pillow = "*"
+optimize-images = "*"
+art = "*"
 
 [requires]
 python_version = "3.7"
