@@ -5,7 +5,7 @@ from art import *
 
 def scrapMulti(start_page, end_page, url_base):
     lista = []
-
+    iterador = 1
     for i in range(int(start_page), int(end_page)+1):   #Recorrer todas las pagina elegidas
         if i > 1:
             url = "%spage/%d" % (url_base, i)
