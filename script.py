@@ -1,7 +1,10 @@
 import requests
 from bs4 import BeautifulSoup
-import os
-from art import *
+import os, sys
+from PIL import Image
+from time import sleep
+import glob
+path = os.getcwd()
 
 def scrapMulti(start_page, end_page, url_base):
     lista = []
@@ -45,26 +48,49 @@ def scrapMulti(start_page, end_page, url_base):
             for post in imagenesdiv:
                 for imagen in post.find_all('img'):
                     resultado = imagen['src']
+                    resultado = resultado.replace('hhtps', 'https')
                     iter = len(resultado.split('/'))-1
                     filename = resultado.split('/')[iter]
                     print(f'Descargando... {filename}')
                     request = requests.get(resultado)
+                    if request.status_code != 200:
+                        print('Error Imagen No disponible')
+                        sleep(1)
+                        continue
+                    path = os.getcwd()
                     open(f'imagenes/{titulo}/{filename}', 'wb').write(request.content)
-            path2 = f'imagenes/{titulo}'
-            os.system(f'cd {path2}')
-            os.system(f'optimize-images -nr {path2}') 
+                    oldsize = os.stat(f'imagenes/{titulo}/{filename}').st_size
+                    picture = Image.open(f'imagenes/{titulo}/{filename}')
+                    if ".gif" in filename:
+                        try:
+                            picture.save(f"{path}/imagenes/{titulo}/{filename}",optimize=True,quality=85, save_all=True, append_images=[im.seek(im.tell() + 1)])
+                        except:
+                            pass
+                    else:
+                        picture.save(f"{path}/imagenes/{titulo}/{filename}",optimize=True,quality=85)
+                    newsize = os.stat(f'imagenes/{titulo}/{filename}').st_size
+                    print(f'{filename} \u001b[32m Optimizado\u001b[0m  {oldsize} - {newsize}')
+                    
+            print('# Descarga de Imagenes Completa')
             print('# Optimizacion de Imagenes Completa')
+            sleep(1)
             os.system('cls')
 
 
 
 
 def menu():
-    texto = "Scrap v0.2"
-    Art=text2art(texto)
+    texto ='''
+     __                               ___   ____  
+    / _\ ___ _ __ __ _ _ __   /\   /\/ _ \ |___ \ 
+    \ \ / __| '__/ _` | '_ \  \ \ / / | | |  __) |
+    _\ \ (__| | | (_| | |_) |  \ V /| |_| | / __/ 
+    \__/\___|_|  \__,_| .__/    \_/  \___(_)_____|
+                      |_|                         
+    '''
     os.system('cls')
     print(''.center(100, "="))
-    print(Art.center(100,' '))
+    print(texto.center(100,' '))
     print(''.center(100,"="))
     print ("Selecciona una opción")
     print (u"\t1 - \u001b[36m Scrapear Post\u001b[0m")
@@ -102,6 +128,8 @@ while True:
             except OSError:
                 pass
             if os.path.isdir(f"imagenes/{titulo}"):
+                print("\u001b[31;1m Error: \u001b[33;1m Ya existe el directorio")
+                input("Presione\u001b[34;1m Enter \u001b[37m Para continuar")
                 continue
             try:
                 os.mkdir(f'imagenes/{titulo}')
@@ -112,14 +140,31 @@ while True:
                 for imagen in post.find_all('img'):
                     iterador = iterador + 1
                     resultado = imagen['src']
+                    resultado = resultado.replace('hhtps', 'https')
                     iter = len(resultado.split('/'))-1
                     filename = resultado.split('/')[iter]
                     print(f'Descargando... {filename}')
                     request = requests.get(resultado)
-                    open(f'imagenes/{titulo}/{filename}', 'wb').write(request.content)
+                    if request.status_code != 200:
+                        print('Error Imagen No disponible')
+                        sleep(1)
+                        continue
+                    path = os.getcwd()
+                    open(f'{path}/imagenes/{titulo}/{filename}', 'wb').write(request.content)
+                    oldsize = os.stat(f'imagenes/{titulo}/{filename}').st_size
+                    picture = Image.open(f'imagenes/{titulo}/{filename}')
+
+                    if ".gif" in filename:
+                        try:
+                            picture.save(f"{path}/imagenes/{titulo}/{filename}",optimize=True,quality=85, save_all=True, append_images=[im.seek(im.tell() + 1)])
+                        except:
+                            pass
+                    else:
+                        picture.save(f"{path}/imagenes/{titulo}/{filename}",optimize=True,quality=85)
+                    newsize = os.stat(f'imagenes/{titulo}/{filename}').st_size
+                    print(f'{filename} \u001b[32m Optimizado\u001b[0m {oldsize} - {newsize}')
+                    
             path2 = f'imagenes/{titulo}'
-            os.system(f'cd {path2}')
-            os.system(f'optimize-images -nr {path2}') 
             print('# Optimizacion de Imagenes Completa')
             print('---------')
             input('Descarga Finalizada, presiona enter para continuar: # ')
@@ -128,8 +173,20 @@ while True:
     elif opcion == 4:
         break
     elif opcion == 2:
-        path = 'imagenes/'
-        os.system(f'optimize-images {path}') 
+        path = os.getcwd()
+        carpetas = os.listdir(f'{path}/imagenes')
+
+        for nombre in carpetas:
+            archivos = glob.glob(f"{path}/imagenes/{nombre}/*")
+            for file in archivos:
+                oldsize = os.stat(f'{file}').st_size
+                picture = Image.open(f'{file}')
+                picture.save(f"{file}","JPEG",optimize=True,quality=85)
+                newsize = os.stat(f'{file}').st_size
+                filename = os.path.splitext(file)[0]
+                print(f'{filename} \u001b[32m Optimizado\u001b[0m  {oldsize}kb - {newsize}kb')
+                sleep(0.2)
+                
     elif opcion == 3:
         print('Ingresa la url'.center(50,"="))
         url = input('# ')

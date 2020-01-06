@@ -10,7 +10,6 @@ requests = "*"
 bs4 = "*"
 pillow = "*"
 optimize-images = "*"
-art = "*"
 
 [requires]
 python_version = "3.7"
